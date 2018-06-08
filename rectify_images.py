@@ -64,7 +64,7 @@ def rectify(threeD_pos1, threeD_pos2, orientation_matrix1, orientation_matrix2, 
 	plt.pause(15)
 	plt.close()'''
 	#return (R1, R2, P1, P2, Q, roi1, roi2)
-	return (img1_rect, img2_rect, horizontally_rectified)
+	return (img1_rect, img2_rect, horizontally_rectified, R1, R2, camera_matrix1, P1, distortion_coeffs1)
 
 '''def main():
 	(threeD_pos1, orientation_matrix1, focal_len1, principal_point1) = read_camera_parameters(sys.argv[1])	

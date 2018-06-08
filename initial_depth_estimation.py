@@ -119,5 +119,5 @@ def initial_depth_estimate(current_img_rectified, rectified_neighbors, horizonta
 				all_depth_errors[i] += cumulative_SADs[row, col, i, j]'''
 			all_depth_errors[i] += cumulative_SADs[row, col, i, j]
 
-	print(all_depth_errors)
+	#print(all_depth_errors)
 	return float(np.argmin(all_depth_errors))/10	

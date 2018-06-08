@@ -54,8 +54,8 @@ def main():
 	for j in range(img_height):
 		for k in range(img_width):
 			estimated_depth_map[j, k] = initial_depth_estimate(current_img_rectified, rectified_neighbors, horizontal_rec, current_camera_focal_len, neighbor_focal_lens, current_3D_pose, neighbor_3D_poses, j, k, cumulative_SADs)
-			#if(k == 500):
-			print(str(j)+', '+str(k)+': '+str(estimated_depth_map[j, k]))			
+			if(k == 500):
+				print(str(j)+', '+str(k)+': '+str(estimated_depth_map[j, k]))			
 	print(estimated_depth_map)
 	np.save(sys.argv[4], estimated_depth_map)
 	'''print(rectification_matrices[:, :, 0])
@@ -65,7 +65,7 @@ def main():
 	plt.subplot(1, 2, 2)
 	plt.imshow(cv2.warpPerspective(current_img_rectified[:, :, :, 0], rectification_matrices[:, :, 0], (img_width, img_height)))
 	plt.pause(1000)
-	plt.show(block=False)'''	
+	plt.show(block=False)'''
 	'''estimated_depth_map = np.load(sys.argv[4])
 	for i in range(len(neighbor_focal_lens)):
 		estimated_depth_map = cv2.warpPerspective(estimated_depth_map, rectification_matrices[:, :, i], (img_width, img_height))'''

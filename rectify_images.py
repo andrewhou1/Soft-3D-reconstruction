@@ -26,12 +26,24 @@ def rectify(threeD_pos1, threeD_pos2, orientation_matrix1, orientation_matrix2, 
 	camera_matrix1[1, 1] = focal_len1
 	camera_matrix1[0, 2] = principal_point1[0]
 	camera_matrix1[1, 2] = principal_point1[1]
+	print(principal_point1[0])
+	print(principal_point1[1])
 	camera_matrix1[2, 2] = 1.0
 	camera_matrix2[0, 0] = focal_len2
 	camera_matrix2[1, 1] = focal_len2
 	camera_matrix2[0, 2] = principal_point2[0]
 	camera_matrix2[1, 2] = principal_point2[1]
 	camera_matrix2[2, 2] = 1.0
+	'''extrinsic_camera_matrix1 = np.zeros((3, 4))
+	extrinsic_camera_matrix2 = np.zeros((3, 4))
+	extrinsic_camera_matrix1[0:3, 0:3] = orientation_matrix1
+	extrinsic_camera_matrix1[0:3, 3] = threeD_pos1
+	extrinsic_camera_matrix1[2, 3] = 1.0
+	camera_matrix1 = np.matmul(intrinsic_camera_matrix1, extrinsic_camera_matrix1)
+	extrinsic_camera_matrix2[0:3, 0:3] = orientation_matrix2
+	extrinsic_camera_matrix2[0:3, 3] = threeD_pos2
+	extrinsic_camera_matrix2[2, 3] = 1.0
+	camera_matrix2 = np.matmul(intrinsic_camera_matrix2, extrinsic_camera_matrix2)'''
 	distortion_coeffs1 = np.zeros((1,5))
 	distortion_coeffs2 = np.zeros((1,5))
 	rotation_matrix = np.matmul(np.linalg.inv(orientation_matrix2), orientation_matrix1)
@@ -39,17 +51,31 @@ def rectify(threeD_pos1, threeD_pos2, orientation_matrix1, orientation_matrix2, 
 	(R1, R2, P1, P2, Q, roi1, roi2) = cv2.stereoRectify(camera_matrix1, distortion_coeffs1, camera_matrix2, distortion_coeffs2, (img_width, img_height), rotation_matrix, translation_vector, flags=cv2.CALIB_ZERO_DISPARITY, alpha=-1, newImageSize=(img_width, img_height))	
 	print(R1)
 	print(R2)
+	print("P1")
 	print(P1)
+	print("P2")
 	print(P2)
 	print(Q)
 	print(roi1)
 	print(roi2)
 	if(math.fabs(P2[1, 3]) > 0.0000001):
 		horizontally_rectified = False
-	map1x, map1y = cv2.initUndistortRectifyMap(cameraMatrix=camera_matrix1, distCoeffs=distortion_coeffs1, R=R1, newCameraMatrix=P1, size=(img_width, img_height), m1type=cv2.CV_32FC1)	
-	map2x, map2y = cv2.initUndistortRectifyMap(cameraMatrix=camera_matrix2, distCoeffs=distortion_coeffs2, R=R2, newCameraMatrix=P2, size=(img_width, img_height), m1type=cv2.CV_32FC1)
-	img1_rect=cv2.remap(img_1, map1x, map1y, cv2.INTER_LINEAR)
-	img2_rect=cv2.remap(img_2, map2x, map2y, cv2.INTER_LINEAR)
+	#map1x, map1y = cv2.initUndistortRectifyMap(cameraMatrix=camera_matrix1, distCoeffs=distortion_coeffs1, R=R1, newCameraMatrix=P1, size=(img_width, img_height), m1type=cv2.CV_32FC1)	
+	#map2x, map2y = cv2.initUndistortRectifyMap(cameraMatrix=camera_matrix2, distCoeffs=distortion_coeffs2, R=R2, newCameraMatrix=P2, size=(img_width, img_height), m1type=cv2.CV_32FC1)
+	#img1_rect=cv2.remap(img_1, map1x, map1y, cv2.INTER_LINEAR)
+	#img2_rect=cv2.remap(img_2, map2x, map2y, cv2.INTER_LINEAR)
+	R1[0, 2] = principal_point1[0]-((R1[0, 0]+R1[0, 1])*principal_point1[0])
+	R1[1, 2] = principal_point1[1]-((R1[1, 0]+R1[1, 1])*principal_point1[1])
+	R1[2, 0] = 0.0
+	R1[2, 1] = 0.0
+	R1[2, 2] = 1.0
+	img1_rect = cv2.warpPerspective(img_1, R1, (img_width, img_height), flags=cv2.WARP_INVERSE_MAP)
+	R2[0, 2] = principal_point2[0]-((R2[0, 0]+R2[0, 1])*principal_point2[0])
+	R2[1, 2] = principal_point2[1]-((R2[1, 0]+R2[1, 1])*principal_point2[1])
+	R2[2, 0] = 0.0
+	R2[2, 1] = 0.0
+	R2[2, 2] = 1.0
+	img2_rect = cv2.warpPerspective(img_2, R2, (img_width, img_height), flags=cv2.WARP_INVERSE_MAP)
 	'''fig, ax = plt.subplots(nrows=2, ncols=2)
 	plt.subplot(2, 2, 1)
 	plt.imshow(img_1)

@@ -2,6 +2,7 @@ import math
 import numpy as np
 import cv2
 from scipy.ndimage.interpolation import shift
+from guidedfilter import *
 
 def get_neighbors(param_filelist, img_filelist, idx, images_per_row):
 	neighbor_param_files = []
@@ -69,7 +70,7 @@ def cumulative_SAD(current_img_rectified, rectified_neighbors, current_camera_fo
 				cumulative_costs = np.cumsum(np.cumsum(np.sum(cost, axis=2), axis=0), axis=1)
 				for row in range(4, dims[0]-3):
 					for col in range(4, dims[1]-3):
-						cumulative_SADs[row, col, i, j] = cumulative_costs[row+3, col+3]-cumulative_costs[row-4, col+3]-cumulative_costs[row+3, col-4]+cumulative_costs[row-4, col-4]
+						cumulative_SADs[row, col, i, j] = cumulative_costs[row, col]-cumulative_costs[row-1, col]-cumulative_costs[row, col-1]+cumulative_costs[row-1, col-1]
 				cumulative_SADs[:, :, i, j] = cv2.warpPerspective(cumulative_SADs[:, :, i, j], rectification_matrices[:, :, j], (dims[1], dims[0]))
 			else:
 				#shifted_img = np.roll(current_img_rectified[:, :, :, j], disparity, axis=0)
@@ -80,9 +81,17 @@ def cumulative_SAD(current_img_rectified, rectified_neighbors, current_camera_fo
 				cumulative_costs = np.cumsum(np.cumsum(np.sum(cost, axis=2), axis=0), axis=1)
 				for row in range(4, dims[0]-3):
 					for col in range(4, dims[1]-3):
-						cumulative_SADs[row, col, i, j] = cumulative_costs[row+3, col+3]-cumulative_costs[row-4, col+3]-cumulative_costs[row+3, col-4]+cumulative_costs[row-4, col-4]
+						cumulative_SADs[row, col, i, j] = cumulative_costs[row, col]-cumulative_costs[row-1, col]-cumulative_costs[row, col-1]+cumulative_costs[row-1, col-1]
 				cumulative_SADs[:, :, i, j] = cv2.warpPerspective(cumulative_SADs[:, :, i, j], rectification_matrices[:, :, j], (dims[1], dims[0]))
 	return cumulative_SADs
+
+def guided_filter_step(SADs, guide_img):
+	dims = SADs.shape
+	for i in range(dims[2]):
+		for j in range(dims[3]):
+			SADs[:, :, i, j] = guidedfilter(guide_img, SADs[:, :, i, j], 8, 100)
+			#print(i, j)
+	return SADs	
 
 def initial_depth_estimate(current_img_rectified, rectified_neighbors, horizontal_rec, current_camera_focal_len, neighbor_focal_lens, current_3D_pose, neighbor_3D_poses, row, col, cumulative_SADs):
 	all_depth_errors = np.zeros((30))

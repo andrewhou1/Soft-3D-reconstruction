@@ -51,6 +51,9 @@ def main():
 			print(horizontal_rec) 	
 		estimated_depth_map = np.zeros((img_height, img_width))
 		cumulative_SADs = cumulative_SAD(current_img_rectified, rectified_neighbors, current_camera_focal_len, neighbor_focal_lens, current_3D_pose, neighbor_3D_poses, horizontal_rec, rectification_matrices)
+		guide_img = cv2.imread(img_and_parameter_dir+img_files[img_idx])
+		guide_img = cv2.cvtColor(guide_img, cv2.COLOR_BGR2GRAY)
+		cumulative_SADs = guided_filter_step(cumulative_SADs, guide_img) 
 		print(cumulative_SADs[:, :, 20, 0])
 		for j in range(img_height):
 			for k in range(img_width):
